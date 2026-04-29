@@ -1,65 +1,96 @@
-import Image from "next/image";
+import HeroSection from "./components/home/HeroSection";
+import FirmStats from "./components/home/FirmStats";
+import PracticeAreas from "./components/home/PracticeAreas";
+import FeaturedLawyers from "./components/home/FeaturedLawyers";
+import RecentArticles from "./components/home/RecentArticles";
+import ClientTestimonial from "./components/home/ClientTestimonial";
+import PricePackages from "./components/home/PricePackages"; // New component
+import FinalCTA from "./components/home/FinalCTA";
+import { supabase } from "../supabase/client";
 
-export default function Home() {
+export default async function Home() {
+  // 1. Fetch Categories
+  const { data: categories, error: catError } = await supabase
+    .from('categories')
+    .select('id, name, description, icon_url')
+    .eq('is_active', true)
+    .order('display_order')
+  if (catError) console.error("Error fetching categories:", catError)
+
+  // 2. Fetch featured lawyers
+  const { data: lawyers, error: lawError } = await supabase
+    .from('lawyers')
+    .select('id, full_name, photo_url, bio, experience_years, can_receive_requests')
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+    .limit(4)
+
+  if (lawError) console.error("Error fetching featured lawyers:", lawError)
+
+  const { data: lawyerCategories, error: lcError } = await supabase
+    .from('lawyer_categories')
+    .select('lawyer_id, category_id')
+
+  if (lcError) {
+    console.error("Error fetching featured lawyer categories:", lcError)
+  }
+
+  const featuredWithCategories = lawyers?.map(lawyer => ({
+    ...lawyer,
+    lawyer_categories: lawyerCategories
+      ?.filter(lc => lc.lawyer_id === lawyer.id)
+      .map(lc => ({
+        categories: categories?.find(c => c.id === lc.category_id) || { id: lc.category_id, name: "تخصص عام" }
+      })) || []
+  })) || []
+
+  // 3. Fetch Recent Articles (Manual Join style)
+  const { data: articles, error: artError } = await supabase
+    .from('articles')
+    .select('*')
+    .neq('status', 'مسودة')
+    .order('published_at', { ascending: false })
+    .limit(3)
+  if (artError) console.error("Error fetching recent articles:", artError)
+
+  const articlesWithData = articles?.map(article => ({
+    ...article,
+    lawyers: lawyers?.find(l => l.id === article.author_id)
+  })) || []
+
+  // 4. Fetch Testimonials
+  const { data: testimonials, error: testError } = await supabase
+    .from('testimonials')
+    .select(`
+      id, client_name, rating,
+      content, photo_url,
+      lawyers(full_name)
+    `)
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false })
+  if (testError) console.error("Error fetching testimonials:", testError)
+
+  // 5. Fetch Price Packages
+  const { data: packages, error: pkgError } = await supabase
+    .from('price_packages')
+    .select('*')
+    .eq('is_active', true)
+    .order('display_order')
+  if (pkgError) console.error("Error fetching price packages:", pkgError)
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <>
+      <main className="pb-24 pt-16">
+        <HeroSection />
+        <FirmStats />
+        <PracticeAreas categories={categories || []} />
+        <FeaturedLawyers lawyers={featuredWithCategories} />
+        <RecentArticles articles={articlesWithData} />
+        <ClientTestimonial lawyers={featuredWithCategories} />
+        <PricePackages packages={packages || []} />
+        <FinalCTA />
       </main>
-    </div>
+    </>
   );
 }
+
