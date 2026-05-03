@@ -10,7 +10,23 @@ export default async function ContactPage() {
     .from('lawyers')
     .select('id, full_name')
     .eq('is_active', true)
-    .order('full_name')
+
+  // جلب عدد الطلبات لكل محامي للترتيب حسب الشعبية
+  const { data: requestCounts } = await supabase
+    .from('consultation_requests')
+    .select('lawyer_id')
+
+  const countsMap: Record<string, number> = {};
+  requestCounts?.forEach(r => {
+    if (r.lawyer_id) countsMap[r.lawyer_id] = (countsMap[r.lawyer_id] || 0) + 1;
+  });
+
+  // ترتيب حسب عدد الطلبات (الأكثر أولاً) ثم أبجدياً
+  const sortedLawyers = lawyers?.sort((a, b) => {
+    const countDiff = (countsMap[b.id] || 0) - (countsMap[a.id] || 0);
+    if (countDiff !== 0) return countDiff;
+    return a.full_name.localeCompare(b.full_name, 'ar');
+  }) || [];
 
   // 2. Fetch Settings for contact info (ID 1 as per DDL)
   const { data: settings } = await supabase
@@ -23,7 +39,7 @@ export default async function ContactPage() {
     <main className="pt-24 px-6 space-y-12 max-w-7xl mx-auto">
       <ContactHeader />
       <ContactInfoBento settings={settings} />
-      <ConsultationForm lawyers={lawyers || []} />
+      <ConsultationForm lawyers={sortedLawyers} />
       <LocationMap mapUrl={settings?.google_map_url} />
     </main>
   );
