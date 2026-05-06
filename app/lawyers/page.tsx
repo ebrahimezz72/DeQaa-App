@@ -45,8 +45,8 @@ export default async function LawyersPage({ searchParams }: { searchParams: Prom
   const lawyersWithCategories = lawyers?.map(lawyer => ({
     ...lawyer,
     lawyer_categories: lawyerCategories
-      ?.filter(lc => lc.lawyer_id === lawyer.id)
-      .map(lc => ({
+      ?.filter((lc: any) => lc.lawyer_id === lawyer.id)
+      .map((lc: any) => ({
         categories: categories?.find(c => c.id === lc.category_id) || { id: lc.category_id, name: "تخصص عام" }
       })) || []
   }))

@@ -68,8 +68,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ id: s
     lawyersWithCategories = lawyers?.map(lawyer => ({
       ...lawyer,
       lawyer_categories: allMappings
-        ?.filter(lc => lc.lawyer_id === lawyer.id)
-        .map(lc => ({
+        ?.filter((lc: any) => lc.lawyer_id === lawyer.id)
+        .map((lc: any) => ({
           categories: allCategories?.find(c => String(c.id) === String(lc.category_id)) || { id: lc.category_id, name: "تخصص عام" }
         })) || []
     })) || [];

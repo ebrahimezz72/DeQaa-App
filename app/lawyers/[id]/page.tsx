@@ -49,7 +49,7 @@ export default async function LawyerProfilePage({ params }: { params: Promise<{ 
   const lawyerWithCategories = {
     ...lawyer,
     lawyer_categories: lawyerCategories
-      ?.map(lc => ({
+      ?.map((lc: any) => ({
         categories: categories?.find(c => c.id === lc.category_id) || { id: lc.category_id, name: "تخصص عام" }
       })) || []
   }
@@ -88,7 +88,7 @@ export default async function LawyerProfilePage({ params }: { params: Promise<{ 
               lawyerId={id} 
               lawyerName={lawyerWithCategories.full_name} 
               lawyerPhone={lawyerWithCategories.phone} 
-              categories={lawyerWithCategories.lawyer_categories.map(lc => lc.categories)}
+              categories={lawyerWithCategories.lawyer_categories.map((lc: any) => lc.categories)}
             />
           </div>
         )}
