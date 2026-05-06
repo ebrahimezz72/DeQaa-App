@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { supabase } from "../../../../supabase/client";
 
-export default function ConsultationForm({ lawyerId }: { lawyerId?: string | null }) {
+export default function ConsultationForm({ lawyerId, categories }: { lawyerId?: string | null, categories?: any[] }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -14,11 +14,21 @@ export default function ConsultationForm({ lawyerId }: { lawyerId?: string | nul
     setError(null);
 
     const formData = new FormData(e.currentTarget);
+    
+    let finalSummary = formData.get("case_summary") as string;
+    const categoryId = formData.get("category_id") as string;
+    if (categories && categoryId) {
+      const categoryName = categories.find(c => String(c.id) === String(categoryId))?.name;
+      if (categoryName) {
+        finalSummary = `[القسم المختار: ${categoryName}]\n\n${finalSummary}`;
+      }
+    }
+
     const data = {
       client_name: formData.get("client_name") as string,
       client_phone: formData.get("client_phone") as string,
       client_email: formData.get("client_email") as string,
-      case_summary: formData.get("case_summary") as string,
+      case_summary: finalSummary,
       lawyer_id: lawyerId || null,
       status: 'pending'
     };
@@ -89,6 +99,23 @@ export default function ConsultationForm({ lawyerId }: { lawyerId?: string | nul
           />
         </div>
       </div>
+
+      {categories && categories.length > 0 && (
+        <div>
+          <label htmlFor="category_id" className="block text-[10px] font-bold text-outline-variant uppercase mb-1">القسم (اختياري)</label>
+          <select 
+            id="category_id"
+            name="category_id"
+            className="w-full bg-surface-container text-primary rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-secondary focus:outline-none border-none appearance-none bg-no-repeat bg-[position:left_1rem_center] bg-[length:1.2em_1.2em]"
+            style={{ backgroundImage: "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")" }}
+          >
+            <option value="">اختر القسم المناسب</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div>
         <label htmlFor="case_summary" className="block text-[10px] font-bold text-outline-variant uppercase mb-1">ملخص القضية</label>

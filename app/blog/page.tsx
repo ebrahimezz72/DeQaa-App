@@ -2,6 +2,8 @@ import FeaturedArticleBlock from "../components/article/FeaturedArticleBlock";
 import ArticleBrowser from "../components/article/ArticleBrowser";
 import { supabase } from "../../supabase/client";
 
+import FinalCTA from "../components/home/FinalCTA";
+
 export default async function ArticlesFeedPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const { category: activeCategoryId } = await searchParams;
 
@@ -10,7 +12,7 @@ export default async function ArticlesFeedPage({ searchParams }: { searchParams:
     .from('categories')
     .select('id, name')
     .eq('is_active', true)
-    .order('display_order')
+    .order('display_order', { ascending: true })
 
   if (catError) console.error("Error fetching categories for article feed:", catError)
 
@@ -36,6 +38,7 @@ export default async function ArticlesFeedPage({ searchParams }: { searchParams:
         initialArticles={articles || []} 
         categories={categories || []} 
       />
+      <FinalCTA />
     </main>
   );
 }

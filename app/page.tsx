@@ -14,7 +14,7 @@ export default async function Home() {
     .from('categories')
     .select('id, name, description, icon_url')
     .eq('is_active', true)
-    .order('display_order')
+    .order('display_order', { ascending: true })
   if (catError) console.error("Error fetching categories:", catError)
 
   // 2. Fetch featured lawyers

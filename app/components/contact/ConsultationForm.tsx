@@ -7,6 +7,10 @@ export default function ConsultationForm({ lawyers }: { lawyers: any[] }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedLawyerId, setSelectedLawyerId] = useState("");
+
+  const selectedLawyer = lawyers.find(l => String(l.id) === selectedLawyerId);
+  const availableCategories = selectedLawyer?.categories || [];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -14,11 +18,20 @@ export default function ConsultationForm({ lawyers }: { lawyers: any[] }) {
     setError(null);
 
     const formData = new FormData(e.currentTarget);
+    let finalSummary = formData.get("case_summary") as string;
+    const categoryId = formData.get("category_id") as string;
+    if (availableCategories && categoryId) {
+      const categoryName = availableCategories.find((c: any) => String(c.id) === String(categoryId))?.name;
+      if (categoryName) {
+        finalSummary = `[القسم المختار: ${categoryName}]\n\n${finalSummary}`;
+      }
+    }
+
     const data = {
       client_name: formData.get("client_name") as string,
       client_phone: formData.get("client_phone") as string,
       client_email: formData.get("client_email") as string,
-      case_summary: formData.get("case_summary") as string,
+      case_summary: finalSummary,
       lawyer_id: formData.get("lawyer_id") || null,
       status: 'pending'
     };
@@ -53,7 +66,7 @@ export default function ConsultationForm({ lawyers }: { lawyers: any[] }) {
   }
 
   return (
-    <section className="bg-surface-container-lowest p-8 rounded-3xl shadow-lg border border-outline-variant/10 max-w-4xl mx-auto">
+    <section id="consultation-form" className="bg-surface-container-lowest p-8 rounded-3xl shadow-lg border border-outline-variant/10 max-w-4xl mx-auto">
       <div className="mb-8 text-right">
         <h3 className="text-2xl font-black text-primary mb-2">طلب استشارة قانونية</h3>
         <p className="text-on-surface-variant text-sm">املأ البيانات التالية وسيتواصل معك أحد مستشارينا في أقرب وقت.</p>
@@ -99,7 +112,8 @@ export default function ConsultationForm({ lawyers }: { lawyers: any[] }) {
             <select 
               required
               name="lawyer_id"
-              defaultValue=""
+              value={selectedLawyerId}
+              onChange={(e) => setSelectedLawyerId(e.target.value)}
               className="w-full bg-surface-container-high border-2 border-transparent rounded-xl focus:border-secondary focus:bg-white py-4 px-4 text-right appearance-none outline-none transition-all cursor-pointer font-bold text-primary"
             >
               <option value="" disabled>من فضلك اختر المحامي المتخصص</option>
@@ -112,6 +126,27 @@ export default function ConsultationForm({ lawyers }: { lawyers: any[] }) {
             </div>
           </div>
         </div>
+        
+        {availableCategories.length > 0 && (
+          <div className="space-y-1 animate-fade-in-up">
+            <label className="block text-sm font-black text-primary mr-1 text-right">القسم المطلوب (اختياري)</label>
+            <div className="relative group">
+              <select 
+                name="category_id"
+                defaultValue=""
+                className="w-full bg-surface-container-high border-2 border-transparent rounded-xl focus:border-secondary focus:bg-white py-4 px-4 text-right appearance-none outline-none transition-all cursor-pointer font-bold text-primary"
+              >
+                <option value="">أخرى / لم يتم التحديد</option>
+                {availableCategories.map((cat: any) => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-primary/40 group-focus-within:text-secondary transition-colors">
+                <span className="material-symbols-outlined">expand_more</span>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="space-y-1">
           <label className="block text-sm font-black text-primary mr-1 text-right">ملخص القضية</label>

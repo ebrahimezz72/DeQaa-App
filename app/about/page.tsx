@@ -4,6 +4,7 @@ import MissionVisionBento from "../components/about/MissionVisionBento";
 import OurPhilosophy from "../components/about/OurPhilosophy";
 import TeamCallout from "../components/about/TeamCallout";
 import ReviewForm from "../components/shared/ReviewForm";
+import FinalCTA from "../components/home/FinalCTA";
 import { supabase } from "../../supabase/client";
 
 export default async function AboutUsPage() {
@@ -55,6 +56,7 @@ export default async function AboutUsPage() {
       </section>
 
       <TeamCallout />
+      <FinalCTA />
     </main>
   );
 }

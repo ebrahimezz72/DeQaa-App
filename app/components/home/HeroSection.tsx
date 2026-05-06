@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function HeroSection() {
   return (
@@ -21,9 +22,9 @@ export default function HeroSection() {
             خبرة قانونية تمتد لعقود في قلب القاهرة، نقدم الدقة والاحترافية التي تستحقها قضيتك.
           </p>
           <div className="flex flex-col gap-4">
-            <button className="bg-secondary text-white px-10 py-5 rounded-2xl font-black text-xl shadow-[0_20px_40px_rgba(117,91,0,0.3)] hover:shadow-[0_25px_50px_rgba(117,91,0,0.4)] active:scale-95 transition-all w-max hover:-translate-y-1">
-              احجز استشارة مجانية الآن
-            </button>
+            <Link href="/contact#consultation-form" className="bg-secondary text-white px-10 py-5 rounded-2xl font-black text-xl shadow-[0_20px_40px_rgba(117,91,0,0.3)] hover:shadow-[0_25px_50px_rgba(117,91,0,0.4)] active:scale-95 transition-all w-max hover:-translate-y-1 block text-center">
+              احجز استشارة الآن
+            </Link>
           </div>
         </div>
       </div>

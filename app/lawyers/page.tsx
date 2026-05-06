@@ -2,6 +2,8 @@ import TeamHeader from "../components/lawyers/TeamHeader";
 import LawyerList from "../components/lawyers/LawyerList";
 import { supabase } from "../../supabase/client";
 
+import FinalCTA from "../components/home/FinalCTA";
+
 export default async function LawyersPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const { category: activeCategoryId } = await searchParams;
 
@@ -35,7 +37,7 @@ export default async function LawyersPage({ searchParams }: { searchParams: Prom
     .from('categories')
     .select('id, name')
     .eq('is_active', true)
-    .order('display_order')
+    .order('display_order', { ascending: true })
 
   if (catError) console.error("Error fetching categories:", catError)
 
@@ -56,13 +58,14 @@ export default async function LawyersPage({ searchParams }: { searchParams: Prom
   }) || []
 
   return (
-    <main className="pt-24 pb-32 px-6">
+    <main className="pt-24 pb-10 px-6">
       <TeamHeader />
       <LawyerList 
         lawyers={lawyersWithCategories} 
         categories={categories || []} 
         initialCategoryId={activeCategoryId}
       />
+      <FinalCTA />
     </main>
   );
 }

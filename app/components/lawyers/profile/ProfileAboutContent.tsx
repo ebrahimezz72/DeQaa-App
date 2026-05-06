@@ -23,7 +23,7 @@ export default function ProfileAboutContent({ bio, categories, languages, licens
             categories.map((cat: any) => (
               <div key={cat.categories.id} className="bg-white p-6 rounded-2xl border border-surface-container-high shadow-soft flex flex-col items-center hover-lift">
                 <span className="material-symbols-outlined text-secondary text-3xl mb-3">balance</span>
-                <p className="text-sm font-black text-primary">{cat.categories.name}</p>
+                <p className="text-sm font-black text-primary text-center">{cat.categories.name}</p>
               </div>
             ))
           ) : (

@@ -21,8 +21,27 @@ export default async function ContactPage() {
     if (r.lawyer_id) countsMap[r.lawyer_id] = (countsMap[r.lawyer_id] || 0) + 1;
   });
 
-  // ترتيب حسب عدد الطلبات (الأكثر أولاً) ثم أبجدياً
-  const sortedLawyers = lawyers?.sort((a, b) => {
+  // جلب بيانات الأقسام للمحامين
+  const { data: mappings } = await supabase
+    .from('lawyer_categories')
+    .select('lawyer_id, category_id');
+
+  const { data: categories } = await supabase
+    .from('categories')
+    .select('id, name');
+
+  // ترتيب حسب عدد الطلبات (الأكثر أولاً) ثم أبجدياً، وإضافة الأقسام لكل محامي
+  const sortedLawyers = lawyers?.map(lawyer => {
+    const lawyerCats = mappings
+      ?.filter(m => m.lawyer_id === lawyer.id)
+      .map(m => categories?.find(c => c.id === m.category_id))
+      .filter(c => c !== undefined) || [];
+      
+    return {
+      ...lawyer,
+      categories: lawyerCats
+    };
+  }).sort((a, b) => {
     const countDiff = (countsMap[b.id] || 0) - (countsMap[a.id] || 0);
     if (countDiff !== 0) return countDiff;
     return a.full_name.localeCompare(b.full_name, 'ar');

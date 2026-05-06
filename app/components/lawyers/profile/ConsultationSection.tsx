@@ -1,6 +1,6 @@
 import ConsultationForm from "./ConsultationForm";
 
-export default function ConsultationSection({ lawyerId, lawyerName, lawyerPhone }: { lawyerId: string, lawyerName: string, lawyerPhone?: string }) {
+export default function ConsultationSection({ lawyerId, lawyerName, lawyerPhone, categories }: { lawyerId: string, lawyerName: string, lawyerPhone?: string, categories?: any[] }) {
   // تظبيط رقم الهاتف للواتساب (تلقائياً لمصر إذا لم يوجد كود دولي)
   let cleanPhone = lawyerPhone?.replace(/\s+/g, '') || '';
   if (cleanPhone && !cleanPhone.startsWith('+')) {
@@ -24,7 +24,7 @@ export default function ConsultationSection({ lawyerId, lawyerName, lawyerPhone 
           <p className="text-sm text-on-surface-variant">احضر بيانات قضيتك وسيتواصل معك {lawyerName} في أقرب وقت ممكن.</p>
         </div>
         
-        <ConsultationForm lawyerId={lawyerId} />
+        <ConsultationForm lawyerId={lawyerId} categories={categories} />
         
         <div className="mt-8 pt-8 border-t border-outline-variant text-center">
           <p className="text-xs text-on-surface-variant mb-4">أو تواصل مباشرة عبر</p>

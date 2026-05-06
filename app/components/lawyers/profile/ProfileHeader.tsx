@@ -1,7 +1,8 @@
 import Image from "next/image";
 
 export default function ProfileHeader({ lawyer }: { lawyer: any }) {
-  const category = lawyer.lawyer_categories?.[0]?.categories?.name || "مستشار قانوني";
+  const categoriesList = lawyer.lawyer_categories?.slice(0, 2).map((lc: any) => lc.categories?.name) || [];
+  if (categoriesList.length === 0) categoriesList.push("مستشار قانوني");
 
   return (
     <section className="relative">
@@ -33,7 +34,14 @@ export default function ProfileHeader({ lawyer }: { lawyer: any }) {
 
           <div className="flex-1 text-center sm:text-right pt-4 sm:pt-20">
             <h2 className="text-2xl font-black text-primary mb-1">{lawyer.full_name}</h2>
-            <p className="text-secondary font-bold text-sm mb-3">{category}</p>
+            <div className="flex flex-wrap justify-center sm:justify-start flex-row-reverse gap-1.5 sm:gap-3 mb-3">
+              {categoriesList.map((cat: string, idx: number) => (
+                <p key={idx} className="text-secondary font-bold text-[11px] sm:text-sm flex items-center gap-1.5 sm:gap-3 flex-row-reverse">
+                  <span className="truncate">{cat}</span>
+                  {idx === 0 && categoriesList.length > 1 && <span className="text-secondary/50">•</span>}
+                </p>
+              ))}
+            </div>
             <div className="flex flex-wrap justify-center sm:justify-start flex-row-reverse gap-2">
               <span className="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-xs font-bold flex items-center justify-center gap-1 flex-row-reverse">
                 <span className="material-symbols-outlined text-[14px]" style={{fontVariationSettings: "'FILL' 1"}}>verified</span>

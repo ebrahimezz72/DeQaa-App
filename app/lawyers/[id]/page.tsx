@@ -88,6 +88,7 @@ export default async function LawyerProfilePage({ params }: { params: Promise<{ 
               lawyerId={id} 
               lawyerName={lawyerWithCategories.full_name} 
               lawyerPhone={lawyerWithCategories.phone} 
+              categories={lawyerWithCategories.lawyer_categories.map(lc => lc.categories)}
             />
           </div>
         )}

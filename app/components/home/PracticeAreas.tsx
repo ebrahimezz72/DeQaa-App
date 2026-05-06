@@ -12,7 +12,7 @@ export default function PracticeAreas({ categories }: { categories: any[] }) {
         {categories.map((category) => (
           <Link 
             key={category.id} 
-            href={`/lawyers?category=${category.id}`}
+            href={`/categories/${category.id}`}
             className="bg-white p-4 md:p-7 rounded-2xl md:rounded-[2rem] border border-surface-container-high hover-lift shadow-sm group transition-all duration-500 hover:bg-primary relative overflow-hidden animate-fade-in-up block cursor-pointer"
           >
             <div className="absolute -top-10 -left-10 w-24 h-24 bg-secondary/5 rounded-full group-hover:bg-white/5 transition-colors"></div>

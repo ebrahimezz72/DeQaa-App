@@ -4,6 +4,7 @@ import "./globals.css";
 import TopAppBar from "./components/layout/TopAppBar";
 import BottomNavBar from "./components/layout/BottomNavBar";
 import FooterArea from "./components/layout/FooterArea";
+import FloatingContactButton from "./components/layout/FloatingContactButton";
 import { supabase } from "../supabase/client";
 
 const cairo = Cairo({
@@ -50,6 +51,7 @@ export default async function RootLayout({
         {children}
         <FooterArea settings={settings} />
         <BottomNavBar />
+        <FloatingContactButton />
       </body>
     </html>
   );
