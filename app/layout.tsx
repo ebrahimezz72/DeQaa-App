@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
   if (error) console.error("Error fetching metadata settings:", error)
 
   const siteName = settings?.site_name_ar || "مؤسسة دقة للمحاماة";
-  const description = settings?.extras?.description || "مؤسسة دقة للمحاماة والاستشارات القانونية - خبرة قانونية تمتد لعقود في قلب القاهرة. نقدم خدمات المحاماة والاستشارات القانونية بدقة واحترافية في جميع التخصصات القانونية.";
+  const description = settings?.extras?.description || "مؤسسة دقة للمحاماة والاستشارات القانونية - خبرة قانونية تمتد لعقود في قلب الغردقة. نقدم خدمات المحاماة والاستشارات القانونية بدقة واحترافية في جميع التخصصات القانونية.";
 
   return {
     metadataBase: new URL(SITE_URL),
@@ -36,10 +36,10 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     keywords: [
       "محامي", "محاماة", "استشارات قانونية", "مؤسسة دقة", "دقة للمحاماة",
-      "محامي في القاهرة", "محامي مصر", "مكتب محاماة", "قانون", "قضايا",
+      "محامي في الغردقة", "محامي مصر", "مكتب محاماة", "قانون", "قضايا",
       "محامي جنائي", "محامي أحوال شخصية", "محامي تجاري", "محامي عقاري",
       "استشارة قانونية مجانية", "أفضل محامي", "توكيل محامي",
-      "DeQaa", "Deqaa Law Firm", "lawyer Egypt", "legal consultation Cairo",
+      "DeQaa", "Deqaa Law Firm", "lawyer Egypt", "legal consultation Hurghada",
     ],
     authors: [{ name: siteName }],
     creator: siteName,
@@ -107,10 +107,10 @@ export default async function RootLayout({
     alternateName: ["DeQaa", "Deqaa Law Firm", "دقة للمحاماة", "مؤسسة دقة"],
     url: SITE_URL,
     logo: `${SITE_URL}/og-image.png`,
-    description: settings?.extras?.description || "مؤسسة دقة للمحاماة والاستشارات القانونية - خبرة قانونية تمتد لعقود في قلب القاهرة.",
+    description: settings?.extras?.description || "مؤسسة دقة للمحاماة والاستشارات القانونية - خبرة قانونية تمتد لعقود في قلب الغردقة.",
     address: {
       "@type": "PostalAddress",
-      addressLocality: settings?.extras?.city || "القاهرة",
+      addressLocality: settings?.extras?.city || "الغردقة",
       addressCountry: "EG",
       streetAddress: settings?.address || "",
     },
