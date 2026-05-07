@@ -1,8 +1,22 @@
+import type { Metadata } from "next";
 import ContactHeader from "../components/contact/ContactHeader";
 import ContactInfoBento from "../components/contact/ContactInfoBento";
 import ConsultationForm from "../components/contact/ConsultationForm";
 import LocationMap from "../components/contact/LocationMap";
 import { supabase } from "../../supabase/client";
+
+export const metadata: Metadata = {
+  title: "تواصل معنا",
+  description: "تواصل مع مؤسسة دقة للمحاماة واحجز استشارتك القانونية. نحن هنا لمساعدتك في جميع القضايا القانونية. اتصل بنا أو أرسل طلب استشارة.",
+  openGraph: {
+    title: "تواصل معنا | مؤسسة دقة للمحاماة",
+    description: "احجز استشارة قانونية مع أفضل محامين في مصر. تواصل معنا الآن.",
+    type: "website",
+  },
+  alternates: {
+    canonical: "/contact",
+  },
+};
 
 export default async function ContactPage() {
   // 1. Fetch Lawyers for the dropdown

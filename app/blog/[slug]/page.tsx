@@ -1,8 +1,54 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { supabase } from "../../../supabase/client";
 import { notFound } from "next/navigation";
 import ViewsCounter from "../../components/article/ViewsCounter";
 import Link from "next/link";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://deqaa.com";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+
+  const { data: article } = await supabase
+    .from('articles')
+    .select('title, excerpt, featured_image, published_at')
+    .eq('slug', slug)
+    .single();
+
+  if (!article) {
+    return { title: "مقال غير موجود" };
+  }
+
+  const title = article.title;
+  const description = article.excerpt
+    ? article.excerpt.substring(0, 160)
+    : `${article.title} - مقال قانوني من مؤسسة دقة للمحاماة`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      url: `${SITE_URL}/blog/${slug}`,
+      publishedTime: article.published_at,
+      images: article.featured_image
+        ? [{ url: article.featured_image, alt: title }]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: article.featured_image ? [article.featured_image] : [],
+    },
+    alternates: {
+      canonical: `${SITE_URL}/blog/${slug}`,
+    },
+  };
+}
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -39,10 +85,35 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     .then(({ error }) => {
       if (error) console.error("Error updating view counter for slug route:", error);
     });
+  // Article JSON-LD Structured Data
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: articleWithAuthor.title,
+    image: articleWithAuthor.featured_image || "",
+    datePublished: articleWithAuthor.published_at,
+    author: {
+      "@type": "Person",
+      name: articleWithAuthor.lawyers?.full_name || "مؤسسة دقة",
+      url: articleWithAuthor.lawyers?.id ? `${SITE_URL}/lawyers/${articleWithAuthor.lawyers.id}` : SITE_URL,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "مؤسسة دقة للمحاماة",
+      url: SITE_URL,
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${SITE_URL}/blog/${slug}`,
+    },
+  };
 
   return (
     <article className="pt-24 pb-32">
-      
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       {/* Article Header */}
       <div className="max-w-4xl mx-auto px-6 mb-12 text-right dir-rtl">
         <Link href="/blog" className="text-secondary font-bold text-sm flex items-center justify-end gap-2 mb-8 group">

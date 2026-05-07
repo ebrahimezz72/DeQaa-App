@@ -1,8 +1,22 @@
+import type { Metadata } from "next";
 import FeaturedArticleBlock from "../components/article/FeaturedArticleBlock";
 import ArticleBrowser from "../components/article/ArticleBrowser";
 import { supabase } from "../../supabase/client";
 
 import FinalCTA from "../components/home/FinalCTA";
+
+export const metadata: Metadata = {
+  title: "المدونة القانونية",
+  description: "اطلع على أحدث المقالات والنصائح القانونية من فريق محامي مؤسسة دقة. مقالات متخصصة في القانون المصري والاستشارات القانونية.",
+  openGraph: {
+    title: "المدونة القانونية | مؤسسة دقة للمحاماة",
+    description: "مقالات قانونية متخصصة ونصائح من خبراء القانون في مؤسسة دقة للمحاماة.",
+    type: "website",
+  },
+  alternates: {
+    canonical: "/blog",
+  },
+};
 
 export default async function ArticlesFeedPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const { category: activeCategoryId } = await searchParams;

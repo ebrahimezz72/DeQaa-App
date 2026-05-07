@@ -1,9 +1,52 @@
+import type { Metadata } from "next";
 import ProfileHeader from "../../components/lawyers/profile/ProfileHeader";
 import ProfileContactStrip from "../../components/lawyers/profile/ProfileContactStrip";
 import ProfileTabs from "../../components/lawyers/profile/ProfileTabs";
 import ConsultationSection from "../../components/lawyers/profile/ConsultationSection"; // New component
 import { supabase } from "../../../supabase/client";
 import { notFound } from "next/navigation";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://deqaa.com";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+
+  const { data: lawyer } = await supabase
+    .from('lawyers')
+    .select('full_name, bio, photo_url, experience_years')
+    .eq('id', id)
+    .single();
+
+  if (!lawyer) {
+    return { title: "محامي غير موجود" };
+  }
+
+  const title = `${lawyer.full_name} - محامي | مؤسسة دقة للمحاماة`;
+  const description = lawyer.bio
+    ? `${lawyer.bio.substring(0, 155)}...`
+    : `${lawyer.full_name} - محامي بخبرة ${lawyer.experience_years || ""} سنوات في مؤسسة دقة للمحاماة والاستشارات القانونية.`;
+
+  return {
+    title: lawyer.full_name,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "profile",
+      url: `${SITE_URL}/lawyers/${id}`,
+      images: lawyer.photo_url ? [{ url: lawyer.photo_url, alt: lawyer.full_name }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: lawyer.photo_url ? [lawyer.photo_url] : [],
+    },
+    alternates: {
+      canonical: `${SITE_URL}/lawyers/${id}`,
+    },
+  };
+}
 
 export default async function LawyerProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -73,9 +116,28 @@ export default async function LawyerProfilePage({ params }: { params: Promise<{ 
     .order('created_at', { ascending: false })
 
   if (testError) console.error("Error fetching lawyer's testimonials:", testError)
+  // Person JSON-LD Structured Data
+  const lawyerJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: lawyer.full_name,
+    jobTitle: "محامي",
+    image: lawyer.photo_url || "",
+    description: lawyer.bio || "",
+    url: `${SITE_URL}/lawyers/${id}`,
+    worksFor: {
+      "@type": "LegalService",
+      name: "مؤسسة دقة للمحاماة",
+      url: SITE_URL,
+    },
+  };
 
   return (
     <main className="pt-16 pb-24 bg-background text-on-surface">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(lawyerJsonLd) }}
+      />
       <ProfileHeader lawyer={lawyerWithCategories} />
       <ProfileContactStrip lawyer={lawyerWithCategories} />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 px-6 max-w-7xl mx-auto">

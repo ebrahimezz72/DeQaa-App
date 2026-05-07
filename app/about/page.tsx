@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import AboutHero from "../components/about/AboutHero";
 import AboutStory from "../components/about/AboutStory";
 import MissionVisionBento from "../components/about/MissionVisionBento";
@@ -6,6 +7,19 @@ import TeamCallout from "../components/about/TeamCallout";
 import ReviewForm from "../components/shared/ReviewForm";
 import FinalCTA from "../components/home/FinalCTA";
 import { supabase } from "../../supabase/client";
+
+export const metadata: Metadata = {
+  title: "من نحن",
+  description: "تعرف على مؤسسة دقة للمحاماة - رؤيتنا ورسالتنا وفريق العمل. خبرة قانونية تمتد لعقود في خدمة العدالة وحماية الحقوق في مصر.",
+  openGraph: {
+    title: "من نحن | مؤسسة دقة للمحاماة",
+    description: "تعرف على قصة مؤسسة دقة للمحاماة ورؤيتنا في تقديم خدمات قانونية بأعلى معايير الجودة.",
+    type: "website",
+  },
+  alternates: {
+    canonical: "/about",
+  },
+};
 
 export default async function AboutUsPage() {
   // 1. Fetch Content Page (using the provided DDL schema)

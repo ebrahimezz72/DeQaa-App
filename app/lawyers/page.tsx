@@ -1,8 +1,22 @@
+import type { Metadata } from "next";
 import TeamHeader from "../components/lawyers/TeamHeader";
 import LawyerList from "../components/lawyers/LawyerList";
 import { supabase } from "../../supabase/client";
 
 import FinalCTA from "../components/home/FinalCTA";
+
+export const metadata: Metadata = {
+  title: "فريق المحامين",
+  description: "تعرف على فريق محامي مؤسسة دقة للمحاماة - محامون متخصصون في جميع مجالات القانون المصري بخبرة واحترافية عالية.",
+  openGraph: {
+    title: "فريق المحامين | مؤسسة دقة للمحاماة",
+    description: "تصفح محامينا المتخصصين واختر المحامي المناسب لقضيتك.",
+    type: "website",
+  },
+  alternates: {
+    canonical: "/lawyers",
+  },
+};
 
 export default async function LawyersPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const { category: activeCategoryId } = await searchParams;

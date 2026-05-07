@@ -1,9 +1,45 @@
+import type { Metadata } from "next";
 import { supabase } from "../../../supabase/client";
 import { notFound } from "next/navigation";
 import CategoryHeader from "../../components/categories/CategoryHeader";
 import CategoryContent from "../../components/categories/CategoryContent";
 
 import FinalCTA from "../../components/home/FinalCTA";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://deqaa.com";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+
+  const { data: category } = await supabase
+    .from('categories')
+    .select('name, description')
+    .eq('id', id)
+    .single();
+
+  if (!category) {
+    return { title: "تخصص غير موجود" };
+  }
+
+  const title = `${category.name} - محامين متخصصين`;
+  const description = category.description
+    ? category.description.substring(0, 160)
+    : `محامين متخصصين في ${category.name} - مؤسسة دقة للمحاماة والاستشارات القانونية في مصر.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: `${category.name} | مؤسسة دقة للمحاماة`,
+      description,
+      type: "website",
+      url: `${SITE_URL}/categories/${id}`,
+    },
+    alternates: {
+      canonical: `${SITE_URL}/categories/${id}`,
+    },
+  };
+}
 
 export default async function CategoryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
