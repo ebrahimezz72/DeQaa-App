@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+export const revalidate = 60;
 import TeamHeader from "../components/lawyers/TeamHeader";
 import LawyerList from "../components/lawyers/LawyerList";
 import { supabase } from "../../supabase/client";

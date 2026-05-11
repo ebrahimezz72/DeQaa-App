@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+export const revalidate = 60;
 import { Cairo } from "next/font/google";
 import "./globals.css";
 import TopAppBar from "./components/layout/TopAppBar";

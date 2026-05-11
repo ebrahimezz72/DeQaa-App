@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+export const revalidate = 60;
 import FeaturedArticleBlock from "../components/article/FeaturedArticleBlock";
 import ArticleBrowser from "../components/article/ArticleBrowser";
 import { supabase } from "../../supabase/client";

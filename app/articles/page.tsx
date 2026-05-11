@@ -1,4 +1,5 @@
 import FeaturedArticleBlock from "../components/article/FeaturedArticleBlock";
+export const revalidate = 60;
 import ArticleBrowser from "../components/article/ArticleBrowser";
 import { supabase } from "../../supabase/client";
 

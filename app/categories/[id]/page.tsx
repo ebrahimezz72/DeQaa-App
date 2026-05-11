@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+export const revalidate = 60;
 import { supabase } from "../../../supabase/client";
 import { notFound } from "next/navigation";
 import CategoryHeader from "../../components/categories/CategoryHeader";

@@ -1,4 +1,5 @@
 import HeroSection from "./components/home/HeroSection";
+export const revalidate = 60;
 import FirmStats from "./components/home/FirmStats";
 import PracticeAreas from "./components/home/PracticeAreas";
 import FeaturedLawyers from "./components/home/FeaturedLawyers";

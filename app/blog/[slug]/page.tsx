@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+export const revalidate = 60;
 import Image from "next/image";
 import { supabase } from "../../../supabase/client";
 import { notFound } from "next/navigation";

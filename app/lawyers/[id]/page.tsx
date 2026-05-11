@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+export const revalidate = 60;
 import ProfileHeader from "../../components/lawyers/profile/ProfileHeader";
 import ProfileContactStrip from "../../components/lawyers/profile/ProfileContactStrip";
 import ProfileTabs from "../../components/lawyers/profile/ProfileTabs";
