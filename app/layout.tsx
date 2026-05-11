@@ -31,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(SITE_URL),
     title: {
-      default: `${siteName} | محاماة واستشارات قانونية`,
+      default: `${siteName} | محاماة واستشارات قانونية في الغردقة`,
       template: `%s | ${siteName}`,
     },
     description,
@@ -41,6 +41,8 @@ export async function generateMetadata(): Promise<Metadata> {
       "محامي جنائي", "محامي أحوال شخصية", "محامي تجاري", "محامي عقاري",
       "استشارة قانونية مجانية", "أفضل محامي", "توكيل محامي",
       "DeQaa", "Deqaa Law Firm", "lawyer Egypt", "legal consultation Hurghada",
+      "Lawyer in Hurghada", "Real estate lawyer Hurghada", "Company formation Hurghada",
+      "Marriage lawyer foreigners Egypt", "Red Sea lawyer", "Property law Egypt"
     ],
     authors: [{ name: siteName }],
     creator: siteName,
@@ -61,7 +63,7 @@ export async function generateMetadata(): Promise<Metadata> {
       locale: "ar_EG",
       url: SITE_URL,
       siteName,
-      title: `${siteName} | محاماة واستشارات قانونية`,
+      title: `${siteName} | محاماة واستشارات قانونية في الغردقة`,
       description,
       images: [
         {
@@ -74,12 +76,16 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${siteName} | محاماة واستشارات قانونية`,
+      title: `${siteName} | محاماة واستشارات قانونية في الغردقة`,
       description,
       images: ["/og-image.png"],
     },
     alternates: {
       canonical: SITE_URL,
+      languages: {
+        'ar-EG': SITE_URL,
+        'en-US': `${SITE_URL}/en`,
+      },
     },
     category: "Law",
     icons: {
@@ -117,8 +123,14 @@ export default async function RootLayout({
     address: {
       "@type": "PostalAddress",
       addressLocality: settings?.extras?.city || "الغردقة",
+      addressRegion: "البحر الأحمر",
       addressCountry: "EG",
-      streetAddress: settings?.address || "",
+      streetAddress: settings?.address || "الغردقة، البحر الأحمر",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: "27.2579",
+      longitude: "33.8116"
     },
     telephone: settings?.phone || "",
     email: settings?.email || "",
@@ -127,10 +139,12 @@ export default async function RootLayout({
       settings?.extras?.twitter || "",
       settings?.extras?.linkedin || "",
     ].filter(Boolean),
-    areaServed: {
-      "@type": "Country",
-      name: "مصر",
-    },
+    areaServed: [
+      { "@type": "City", "name": "Hurghada" },
+      { "@type": "City", "name": "الغردقة" },
+      { "@type": "City", "name": "El Gouna" },
+      { "@type": "City", "name": "Sahl Hasheesh" }
+    ],
     priceRange: "$$",
     openingHoursSpecification: {
       "@type": "OpeningHoursSpecification",

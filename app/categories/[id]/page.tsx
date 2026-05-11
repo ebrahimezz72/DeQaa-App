@@ -22,10 +22,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     return { title: "تخصص غير موجود" };
   }
 
-  const title = `${category.name} - محامين متخصصين`;
+  const title = `${category.name} في الغردقة | مؤسسة دقة للمحاماة`;
   const description = category.description
     ? category.description.substring(0, 160)
-    : `محامين متخصصين في ${category.name} - مؤسسة دقة للمحاماة والاستشارات القانونية في مصر.`;
+    : `أفضل محامي ${category.name} في الغردقة والبحر الأحمر. استشارات قانونية متخصصة من مؤسسة دقة للمحاماة والاستشارات القانونية.`;
 
   return {
     title,
