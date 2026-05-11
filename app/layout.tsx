@@ -82,6 +82,11 @@ export async function generateMetadata(): Promise<Metadata> {
       canonical: SITE_URL,
     },
     category: "Law",
+    icons: {
+      icon: "/favicon.ico",
+      shortcut: "/favicon.ico",
+      apple: "/icon-512.png",
+    },
   }
 }
 
