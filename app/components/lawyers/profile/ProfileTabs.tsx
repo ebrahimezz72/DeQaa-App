@@ -48,7 +48,7 @@ export default function ProfileTabs({ lawyer, articles, testimonials }: { lawyer
               articles.map(article => (
                 <Link 
                   key={article.id} 
-                  href={article.slug ? `/blog/${article.slug}` : `/articles/${article.id}`} 
+                  href={article.id ? `/articles/${article.id}` : `/blog/${article.slug}`} 
                   className="flex flex-col md:flex-row-reverse gap-4 p-5 bg-surface-container-low rounded-2xl group hover:bg-surface-container-high transition-all border border-outline-variant/5 shadow-sm active:scale-95"
                 >
                   <div className="w-full md:w-32 h-32 relative rounded-xl overflow-hidden flex-shrink-0 shadow-md">

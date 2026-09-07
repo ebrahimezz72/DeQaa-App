@@ -1,42 +1,62 @@
 import type { Metadata } from "next";
 export const revalidate = 60;
-import Image from "next/image";
+import ArticleHero from "../../components/article/ArticleHero";
+import ArticleMeta from "../../components/article/ArticleMeta";
+import ArticleBody from "../../components/article/ArticleBody";
+import AuthorCard from "../../components/article/AuthorCard";
+import RelatedArticles from "../../components/article/RelatedArticles";
+import FinalCTA from "../../components/home/FinalCTA";
 import { supabase } from "../../../supabase/client";
 import { notFound } from "next/navigation";
-import ViewsCounter from "../../components/article/ViewsCounter";
-import Link from "next/link";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://deqaa.com";
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const { slug } = await params;
 
-  const { data: article } = await supabase
-    .from('articles')
-    .select('title, excerpt, featured_image, published_at')
-    .eq('slug', slug)
-    .single();
+  let query = supabase
+    .from("articles")
+    .select("title, excerpt, meta_description, meta_keywords, tags, featured_image, published_at, slug, id");
 
-  if (!article) {
-    return { title: "مقال غير موجود" };
+  // Support querying by slug or fallback to id if numeric
+  if (!isNaN(Number(slug))) {
+    query = query.or(`slug.eq.${slug},id.eq.${Number(slug)}`);
+  } else {
+    query = query.eq("slug", slug);
   }
 
-  const title = article.title;
-  const description = article.excerpt
-    ? article.excerpt.substring(0, 160)
-    : `${article.title} - مقال قانوني من مؤسسة دقة للمحاماة`;
+  const { data: article } = await query.single();
+
+  if (!article) {
+    return { title: "مقال غير موجود | مؤسسة دقة للمحاماة" };
+  }
+
+  const title = `${article.title} | مؤسسة دقة للمحاماة`;
+  const description =
+    article.meta_description ||
+    article.excerpt ||
+    `${article.title} - مقال قانوني واستشارة متخصصة من مؤسسة دقة للمحاماة.`;
+
+  const keywords = article.meta_keywords
+    ? article.meta_keywords.split(",").map((k: string) => k.trim())
+    : article.tags || [];
 
   return {
     title,
     description,
+    keywords,
     openGraph: {
       title,
       description,
       type: "article",
-      url: `${SITE_URL}/blog/${slug}`,
+      url: `${SITE_URL}/blog/${article.slug || slug}`,
       publishedTime: article.published_at,
       images: article.featured_image
-        ? [{ url: article.featured_image, alt: title }]
+        ? [{ url: article.featured_image, alt: article.title }]
         : [],
     },
     twitter: {
@@ -46,156 +66,142 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       images: article.featured_image ? [article.featured_image] : [],
     },
     alternates: {
-      canonical: `${SITE_URL}/blog/${slug}`,
+      canonical: `${SITE_URL}/blog/${article.slug || slug}`,
     },
   };
 }
 
-export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function BlogDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
 
   // 1. Fetch Article
-  const { data: article, error } = await supabase
-    .from('articles')
-    .select('*')
-    .eq('slug', slug)
-    .single()
+  let articleQuery = supabase.from("articles").select("*");
+  if (!isNaN(Number(slug))) {
+    articleQuery = articleQuery.or(`slug.eq.${slug},id.eq.${Number(slug)}`);
+  } else {
+    articleQuery = articleQuery.eq("slug", slug);
+  }
 
-  if (error) console.error("Error fetching blog post by slug:", error)
+  const { data: article, error: artError } = await articleQuery.single();
 
-  const { data: author } = await supabase
-    .from('lawyers')
-    .select('id, full_name, bio, photo_url')
-    .eq('id', article?.author_id)
-    .single()
+  if (artError && artError.code !== "PGRST116") {
+    console.error("Error fetching blog article:", artError);
+  }
 
-  const articleWithAuthor = article ? {
-    ...article,
-    lawyers: author
-  } : null;
-
-  if (!articleWithAuthor || articleWithAuthor.status === 'مسودة') {
+  if (!article || article.status === "draft" || article.status === "مسودة") {
     notFound();
   }
 
-  // Increment view counter in background
+  // 2. Fetch Author, Category, and Related articles in parallel
+  const [authorRes, categoryRes, relatedRes] = await Promise.all([
+    article.author_id
+      ? supabase
+          .from("lawyers")
+          .select("id, full_name, bio, photo_url, phone, experience_years")
+          .eq("id", article.author_id)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+    article.category_id
+      ? supabase
+          .from("categories")
+          .select("id, name, description")
+          .eq("id", article.category_id)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+    article.category_id
+      ? supabase
+          .from("articles")
+          .select("id, title, slug, excerpt, featured_image, published_at, views")
+          .eq("category_id", article.category_id)
+          .neq("id", article.id)
+          .neq("status", "draft")
+          .neq("status", "مسودة")
+          .order("published_at", { ascending: false })
+          .limit(3)
+      : supabase
+          .from("articles")
+          .select("id, title, slug, excerpt, featured_image, published_at, views")
+          .neq("id", article.id)
+          .neq("status", "draft")
+          .neq("status", "مسودة")
+          .order("published_at", { ascending: false })
+          .limit(3),
+  ]);
+
+  const author = authorRes.data;
+  const category = categoryRes.data;
+  const relatedArticles = relatedRes.data || [];
+
+  const articleWithData = {
+    ...article,
+    lawyers: author,
+    categories: category,
+    category_name: category?.name,
+  };
+
+  // 3. Increment view counter in background
   supabase
-    .from('articles')
-    .update({ views: (articleWithAuthor.views || 0) + 1 })
-    .eq('id', articleWithAuthor.id)
+    .from("articles")
+    .update({ views: (article.views || 0) + 1 })
+    .eq("id", article.id)
     .then(({ error }) => {
-      if (error) console.error("Error updating view counter for slug route:", error);
+      if (error) console.error("Error updating view counter for blog route:", error);
     });
-  // Article JSON-LD Structured Data
+
+  // 4. JSON-LD Structured Data
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
-    headline: articleWithAuthor.title,
-    image: articleWithAuthor.featured_image || "",
-    datePublished: articleWithAuthor.published_at,
+    headline: articleWithData.title,
+    description: articleWithData.meta_description || articleWithData.excerpt,
+    image: articleWithData.featured_image || "",
+    datePublished: articleWithData.published_at || articleWithData.created_at,
+    dateModified: articleWithData.updated_at || articleWithData.published_at,
+    keywords: articleWithData.tags?.join(", ") || articleWithData.meta_keywords || "",
     author: {
       "@type": "Person",
-      name: articleWithAuthor.lawyers?.full_name || "مؤسسة دقة",
-      url: articleWithAuthor.lawyers?.id ? `${SITE_URL}/lawyers/${articleWithAuthor.lawyers.id}` : SITE_URL,
+      name: author?.full_name || "مؤسسة دقة للمحاماة",
+      url: author?.id ? `${SITE_URL}/lawyers/${author.id}` : SITE_URL,
     },
     publisher: {
       "@type": "Organization",
       name: "مؤسسة دقة للمحاماة",
       url: SITE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/icon.png`,
+      },
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${SITE_URL}/blog/${slug}`,
+      "@id": `${SITE_URL}/blog/${articleWithData.slug || slug}`,
     },
   };
 
   return (
-    <article className="pt-24 pb-32">
+    <main className="pb-24 pt-20 bg-surface min-h-screen">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
       />
-      {/* Article Header */}
-      <div className="max-w-4xl mx-auto px-6 mb-12 text-right dir-rtl">
-        <Link href="/blog" className="text-secondary font-bold text-sm flex items-center justify-end gap-2 mb-8 group">
-          <span>العودة للمدونة</span>
-          <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
-        </Link>
-        
-        <h1 className="text-3xl md:text-5xl font-black text-primary leading-tight mb-6">{articleWithAuthor.title}</h1>
-        
-        <div className="flex flex-row-reverse items-center gap-4 border-y border-outline-variant py-6">
-          <div className="w-12 h-12 rounded-full overflow-hidden relative border-2 border-secondary">
-            <Image 
-              fill 
-              className="object-cover" 
-              src={articleWithAuthor.lawyers?.photo_url || "https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=100&h=100"} 
-              alt={articleWithAuthor.lawyers?.full_name} 
-            />
-          </div>
-          <div className="text-right">
-            <p className="font-bold text-primary">{articleWithAuthor.lawyers?.full_name}</p>
-            <p className="text-xs text-on-surface-variant">
-              تم النشر في {new Date(articleWithAuthor.published_at).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
-          </div>
-        </div>
+      <div className="max-w-5xl mx-auto px-4 md:px-6">
+        <ArticleHero article={articleWithData} />
+        <ArticleMeta article={articleWithData} />
+        <ArticleBody
+          content={articleWithData.content}
+          excerpt={articleWithData.excerpt}
+          tags={articleWithData.tags}
+        />
+        <AuthorCard author={articleWithData.lawyers} articleTitle={articleWithData.title} />
+        <RelatedArticles articles={relatedArticles} />
       </div>
-
-      {/* Hero Image */}
-      <div className="max-w-5xl mx-auto px-6 mb-12">
-        <div className="relative h-[300px] md:h-[500px] rounded-[2rem] overflow-hidden shadow-2xl">
-          <Image 
-            fill 
-            className="object-cover" 
-            src={articleWithAuthor.featured_image || "https://lh3.googleusercontent.com/aida-public/AB6AXuDdGnOEc2Lr_sMf-lb9WV0vB2V6RR9xkFT7ID7aRyHk9TLWT-AaAMca5iSrh2vmj-GB27QLPYUFVksfPjjRsnQ1oul0_iYvGvWBXjcFZCkYJN-Jj4BsrpvJ3fCC24ZpGo4jrlDNg4hdcQuJGlZZw5exA36O7Z7UXGGIesb9UHI5QIaU9fn5Qmt0igehGKEwGpfU-L_Pl9qPk4OxL96sIt0uvqP9rMvlDQwDQTUbySTCddeDaSQKYo47nnDHdJQYFusDR8k0nRP4kpfe"} 
-            alt={articleWithAuthor.title} 
-          />
-        </div>
+      <div className="mt-16">
+        <FinalCTA />
       </div>
-
-      {/* Article Content */}
-      <div className="max-w-3xl mx-auto px-6 dir-rtl text-right">
-        <div className="prose prose-lg max-w-none prose-primary prose-p:text-on-surface prose-p:leading-relaxed prose-headings:font-black prose-headings:text-primary">
-          {articleWithAuthor.content.split('\n').map((para: string, i: number) => (
-            <p key={i} className="mb-6">{para}</p>
-          ))}
-        </div>
-
-        {/* Footer info (tags, etc) */}
-        {articleWithAuthor.tags && articleWithAuthor.tags.length > 0 && (
-          <div className="mt-12 pt-8 border-t border-outline-variant flex flex-wrap flex-row-reverse gap-2">
-            {articleWithAuthor.tags.map((tag: string) => (
-              <span key={tag} className="bg-surface-container-high text-primary px-4 py-1 rounded-full text-xs font-bold">
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* About Author Card */}
-      <div className="max-w-3xl mx-auto px-6 mt-16">
-        <div className="bg-surface-container-low rounded-3xl p-8 flex flex-col md:flex-row-reverse gap-6 items-center shadow-lg border border-outline-variant">
-          <div className="w-24 h-24 rounded-2xl overflow-hidden relative flex-shrink-0 border-2 border-secondary shadow-md">
-            <Image 
-              fill 
-              className="object-cover" 
-              src={articleWithAuthor.lawyers?.photo_url || "https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=100&h=100"} 
-              alt={articleWithAuthor.lawyers?.full_name} 
-            />
-          </div>
-          <div className="text-right flex-1">
-            <h4 className="text-xl font-bold text-primary mb-2">عن الكاتب: {articleWithAuthor.lawyers?.full_name}</h4>
-            <p className="text-sm text-on-surface-variant leading-relaxed line-clamp-3">
-              {articleWithAuthor.lawyers?.bio}
-            </p>
-            <Link href={`/lawyers/${article.lawyers?.id}`} className="inline-block mt-4 text-secondary font-bold text-sm underline">
-              عرض الملف الشخصي الكامل
-            </Link>
-          </div>
-        </div>
-      </div>
-    </article>
+    </main>
   );
 }

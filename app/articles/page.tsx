@@ -28,6 +28,7 @@ export default async function ArticlesFeedPage({ searchParams }: { searchParams:
   const { data: articles, error: artError } = await supabase
     .from('articles')
     .select('*')
+    .neq('status', 'draft')
     .neq('status', 'مسودة')
     .order('published_at', { ascending: false });
 

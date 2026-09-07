@@ -39,6 +39,7 @@ export default async function ArticlesFeedPage({ searchParams }: { searchParams:
       featured_image, published_at, views, category_id,
       lawyers(full_name, photo_url)
     `)
+    .neq('status', 'draft')
     .neq('status', 'مسودة')
     .order('published_at', { ascending: false });
 

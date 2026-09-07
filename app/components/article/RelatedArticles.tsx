@@ -1,24 +1,81 @@
 import Image from "next/image";
+import Link from "next/link";
 
-export default function RelatedArticles() {
+interface RelatedArticleItem {
+  id: number | string;
+  title: string;
+  slug?: string | null;
+  excerpt?: string | null;
+  featured_image?: string | null;
+  published_at?: string | null;
+  views?: number | null;
+}
+
+export default function RelatedArticles({ articles }: { articles?: RelatedArticleItem[] }) {
+  if (!articles || articles.length === 0) return null;
+
   return (
-    <section className="px-6 py-12 border-t border-outline-variant/10">
-      <h3 className="text-lg font-bold text-primary mb-6 text-right">مقالات ذات صلة</h3>
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-4 bg-surface-container-low p-3 rounded-xl hover:bg-surface-container-high transition-colors cursor-pointer">
-          <div className="w-20 h-20 rounded-lg bg-surface-container-highest overflow-hidden flex-shrink-0 relative">
-            <Image 
-              fill
-              className="object-cover" 
-              alt="Legal book" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0eTyhqHBCcmiBBMTShHJmuOddeomISF249SgigieSOC3jjLQUHV8lAb6nbvEplIjuq0HkLuTnB-23ittjLgGsuDIOav_9P6Pc4HI-b6NQi8dp0IAnnDBuXp8DRDboypYjn7C58CLn9EjDvJkbWOs51kf_DY8PYgaaIW1pWXLQrdAtPuWuYcY_UBfvO-4nyC__PIB3bh46ag-L7Per2YJaivr9ARr1oRIA74atTKex6GEPAIE2B4nEBUO6DHGFUkwbB7kd_pmV2mB0"
-            />
-          </div>
-          <div className="text-right flex-1">
-            <h5 className="font-bold text-sm text-primary line-clamp-2">تعديلات قانون الشركات الجديد لعام ٢٠٢٤</h5>
-            <p className="text-[10px] text-on-surface-variant mt-1">منذ يومين • ٤ دقائق قراءة</p>
-          </div>
-        </div>
+    <section className="mt-12 pt-8 border-t border-outline-variant/20 text-right dir-rtl">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl md:text-2xl font-black text-primary">مقالات ذات صلة</h3>
+        <Link
+          href="/blog"
+          className="text-secondary font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all"
+        >
+          <span>عرض جميع المقالات</span>
+          <span className="material-symbols-outlined text-xs">arrow_back</span>
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {articles.map((item) => {
+          const itemDate = item.published_at
+            ? new Date(item.published_at).toLocaleDateString("ar-EG", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })
+            : "";
+          const linkHref = item.slug ? `/blog/${item.slug}` : `/articles/${item.id}`;
+
+          return (
+            <Link
+              key={item.id}
+              href={linkHref}
+              className="group bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/10 hover:border-secondary/30 hover:shadow-lg transition-all flex flex-col justify-between"
+            >
+              <div>
+                <div className="relative w-full h-44 rounded-xl overflow-hidden mb-3 bg-surface-container-high">
+                  <Image
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    alt={item.title || "مقال"}
+                    src={
+                      item.featured_image ||
+                      "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600&auto=format&fit=crop"
+                    }
+                  />
+                </div>
+                <h4 className="font-bold text-base text-primary group-hover:text-secondary transition-colors line-clamp-2 mb-2">
+                  {item.title}
+                </h4>
+                {item.excerpt && (
+                  <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed mb-4">
+                    {item.excerpt}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] text-on-surface-variant pt-3 border-t border-outline-variant/10">
+                <span>{itemDate}</span>
+                <span className="text-secondary font-bold flex items-center gap-1 group-hover:gap-1.5 transition-all">
+                  <span>قراءة المقال</span>
+                  <span className="material-symbols-outlined text-xs">arrow_back</span>
+                </span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );

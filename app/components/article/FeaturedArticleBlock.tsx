@@ -14,7 +14,7 @@ export default function FeaturedArticleBlock({ article }: { article: any }) {
 
   return (
     <section className="relative group">
-      <Link href={`/blog/${article.slug}`} className="block overflow-hidden rounded-xl bg-surface-container-lowest shadow-[0_20px_40px_rgba(2,21,73,0.06)] transition-all">
+      <Link href={article.id ? `/articles/${article.id}` : `/blog/${article.slug}`} className="block overflow-hidden rounded-xl bg-surface-container-lowest shadow-[0_20px_40px_rgba(2,21,73,0.06)] transition-all cursor-pointer">
         <div className="relative h-64 md:h-96 w-full">
           <Image 
             fill
